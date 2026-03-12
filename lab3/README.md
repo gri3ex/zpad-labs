@@ -13,9 +13,19 @@
 - **Інтерпретатор:** Python 3.9+
 
 ## Інструкція із запуску
-1. Активуйте віртуальне середовище у кореневій папці:
-   `.\venv\Scripts\activate`
-2. Перейдіть до папки з лабораторною та встановіть залежності:
+
+1. **Створення віртуального середовища:**
+   - Windows/Linux/macOS:
+     `python -m venv venv`
+
+2. **Активація віртуального середовища:**
+   - Windows (PowerShell):
+     `.\venv\Scripts\activate`
+   - Linux / macOS:
+     `source venv/bin/activate`
+
+3. **Встановлення залежностей:**
    `pip install -r requirements.txt`
-3. Запустіть середовище для перегляду файлу `.ipynb`:
+
+4. **Запуск:**
    `jupyter notebook`
