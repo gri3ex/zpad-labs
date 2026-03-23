@@ -14,4 +14,5 @@
    ```bash
    pip install -r requirements.txt
 2. Запустіть додаток:
-  streamlit run app.py
+  ```bash
+   streamlit run app.py
