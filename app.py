@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# 1. Налаштування сторінки (п. 21)
+# 1. Налаштування сторінки
 st.set_page_config(layout="wide", page_title="VHI Analysis")
 st.title("Наука про дані: Лабораторна робота №5")
 
-# 2. Завантаження даних (п. 10)
+# 2. Завантаження даних
 @st.cache_data
 def load_data():
     df = pd.read_csv('vhi_data.csv')
@@ -20,7 +20,7 @@ except Exception:
     st.error("Файл 'vhi_data.csv' не знайдено!")
     st.stop()
 
-# 3. Логіка скидання (п. 14)
+# 3. Логіка скидання
 def reset_all_filters():
     st.session_state.idx = "VHI"
     st.session_state.reg = df['Region'].unique()[0]
@@ -32,11 +32,11 @@ def reset_all_filters():
 if 'idx' not in st.session_state:
     reset_all_filters()
 
-# 4. Бічна панель (п. 21)
+# 4. Бічна панель
 with st.sidebar:
     st.header("Параметри")
     
-    # Віджети з ключами (п. 10-13)
+    # Віджети з ключами
     idx_choice = st.selectbox("Оберіть часовий ряд:", ["VCI", "TCI", "VHI"], key="idx")
     reg_choice = st.selectbox("Оберіть область:", df['Region'].unique(), key="reg")
     w_range = st.slider("Тижні:", 1, 52, key="weeks")
@@ -47,10 +47,10 @@ with st.sidebar:
     sort_asc = st.checkbox("За зростанням", key="s_asc")
     sort_desc = st.checkbox("За спаданням", key="s_desc")
     
-    if sort_asc and sort_desc: # п. 20 [cite: 20]
+    if sort_asc and sort_desc: 
         st.warning("Вибрано обидва типи сортування. Пріоритет: За зростанням.")
 
-    # Кнопка Reset з callback (п. 14)
+    # Кнопка Reset з callback
     st.button("Reset" , on_click=reset_all_filters)
 
 # 5. Фільтрація та сортування
@@ -65,7 +65,7 @@ if sort_asc:
 elif sort_desc:
     f_df = f_df.sort_values(by=idx_choice, ascending=False)
 
-# 6. Вкладки (п. 15, 21)
+# 6. Вкладки
 t1, t2, t3 = st.tabs(["Таблиця", "Графік області", "Порівняння"])
 
 with t1:
@@ -73,7 +73,7 @@ with t1:
     st.dataframe(f_df, width='stretch') 
 
 with t2:
-    st.subheader(f"Динаміка {idx_choice}") # п. 16 
+    st.subheader(f"Динаміка {idx_choice}") 
     p_df = f_df.sort_values(by=['Year', 'Week'])
     p_df['Time'] = p_df['Year'].astype(str) + "-W" + p_df['Week'].astype(str).str.zfill(2)
     
@@ -100,7 +100,7 @@ with t3:
     
     fig2, ax2 = plt.subplots(figsize=(10, 6))
     
-    # 2. Малюю кожну область окремо (п. 17)
+    # 2. Малюю кожну область окремо 
     for r in compare_df['Region'].unique():
         region_data = compare_df[compare_df['Region'] == r]
         
@@ -110,7 +110,7 @@ with t3:
         else:
             ax2.plot(region_data['Time'], region_data[idx_choice], color='gray', alpha=0.15, linewidth=0.7)
     
-    # 3. Налаштовую вісь X, щоб підписи не зливалися (п. 18)
+    # 3. Налаштовую вісь X, щоб підписи не зливалися 
     time_ticks = compare_df['Time'].unique()
     step = max(len(time_ticks) // 10, 1)
     ax2.set_xticks(time_ticks[::step])
