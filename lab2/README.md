@@ -31,5 +31,20 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 ### 4. Встановлення залежностей
+Встановіть всі необхідні бібліотеки однією командою за допомогою файлу requirements.txt:
+```bash
+pip install -r requirements.txt
+```
+### 5. Запуск Jupyter Notebook
+Для перегляду та виконання коду запустіть сервер Jupyter:
+```bash
+jupyter notebook
+```
+### Технічні вимоги
+* Python: Версія 3.9 або вище.
+
+* Бібліотеки: Pandas, Jupyter, Scikit-learn.
+
+* Оперативна пам'ять: Мінімум 4 ГБ для обробки великих CSV-файлів.
 
 
