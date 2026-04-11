@@ -2,121 +2,122 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# 1. Налаштування сторінки (п. 21)
+#1. Налаштування сторінки
 st.set_page_config(layout="wide", page_title="VHI Analysis")
 st.title("Наука про дані: Лабораторна робота №5")
 
-# 2. Завантаження даних (п. 10)
+#2. Завантаження даних
 @st.cache_data
-def load_data():
-    df = pd.read_csv('vhi_data.csv')
-    df['Year'] = df['Year'].astype(int)
-    df['Week'] = df['Week'].astype(int)
-    return df
+def load_vhi_data():
+    vhi_df = pd.read_csv('vhi_data.csv')
+    vhi_df['Year'] = vhi_df['Year'].astype(int)
+    vhi_df['Week'] = vhi_df['Week'].astype(int)
+    return vhi_df
 
 try:
-    df = load_data()
+    main_dataframe = load_vhi_data()
 except Exception:
     st.error("Файл 'vhi_data.csv' не знайдено!")
     st.stop()
 
-# 3. Логіка скидання (п. 14)
+#3. Логіка скидання
 def reset_all_filters():
-    st.session_state.idx = "VHI"
-    st.session_state.reg = df['Region'].unique()[0]
-    st.session_state.weeks = (1, 52)
-    st.session_state.years = (int(df['Year'].min()), int(df['Year'].max()))
-    st.session_state.s_asc = False
-    st.session_state.s_desc = False
+    st.session_state.index_key = "VHI"
+    st.session_state.region_key = main_dataframe['Region'].unique()[0]
+    st.session_state.week_range_key = (1, 52)
+    st.session_state.year_range_key = (int(main_dataframe['Year'].min()), int(main_dataframe['Year'].max()))
+    st.session_state.asc_key = False
+    st.session_state.desc_key = False
 
-if 'idx' not in st.session_state:
+if 'index_key' not in st.session_state:
     reset_all_filters()
 
-# 4. Бічна панель (п. 21)
+#4. Бічна панель
 with st.sidebar:
     st.header("Параметри")
     
-    # Віджети з ключами (п. 10-13)
-    idx_choice = st.selectbox("Оберіть часовий ряд:", ["VCI", "TCI", "VHI"], key="idx")
-    reg_choice = st.selectbox("Оберіть область:", df['Region'].unique(), key="reg")
-    w_range = st.slider("Тижні:", 1, 52, key="weeks")
-    y_range = st.slider("Роки:", int(df['Year'].min()), int(df['Year'].max()), key="years")
+    selected_index = st.selectbox("Оберіть часовий ряд:", ["VCI", "TCI", "VHI"], key="index_key")
+    selected_region = st.selectbox("Оберіть область:", main_dataframe['Region'].unique(), key="region_key")
+    selected_weeks = st.slider("Тижні:", 1, 52, key="week_range_key")
+    selected_years = st.slider("Роки:", int(main_dataframe['Year'].min()), int(main_dataframe['Year'].max()), key="year_range_key")
     
     st.subheader("Сортування")
-    # Чекбокси (п. 19)
-    sort_asc = st.checkbox("За зростанням", key="s_asc")
-    sort_desc = st.checkbox("За спаданням", key="s_desc")
+    sort_ascending = st.checkbox("За зростанням", key="asc_key")
+    sort_descending = st.checkbox("За спаданням", key="desc_key")
     
-    if sort_asc and sort_desc: # п. 20 [cite: 20]
+    if sort_ascending and sort_descending:
         st.warning("Вибрано обидва типи сортування. Пріоритет: За зростанням.")
 
-    # Кнопка Reset з callback (п. 14)
-    st.button("Reset" , on_click=reset_all_filters)
+    st.button("Reset", on_click=reset_all_filters)
 
 # 5. Фільтрація та сортування
-f_df = df[
-    (df['Region'] == reg_choice) & 
-    (df['Year'].between(y_range[0], y_range[1])) & 
-    (df['Week'].between(w_range[0], w_range[1]))
+filtered_data = main_dataframe[
+    (main_dataframe['Region'] == selected_region) & 
+    (main_dataframe['Year'].between(selected_years[0], selected_years[1])) & 
+    (main_dataframe['Week'].between(selected_weeks[0], selected_weeks[1]))
 ].copy()
 
-if sort_asc:
-    f_df = f_df.sort_values(by=idx_choice, ascending=True)
-elif sort_desc:
-    f_df = f_df.sort_values(by=idx_choice, ascending=False)
+if sort_ascending:
+    filtered_data = filtered_data.sort_values(by=selected_index, ascending=True)
+elif sort_descending:
+    filtered_data = filtered_data.sort_values(by=selected_index, ascending=False)
 
-# 6. Вкладки (п. 15, 21)
-t1, t2, t3 = st.tabs(["Таблиця", "Графік області", "Порівняння"])
+# 6. Вкладки
+tab_table, tab_region_plot, tab_comparison = st.tabs(["Таблиця", "Графік області", "Порівняння"])
 
-with t1:
-    st.subheader(f"Дані для {reg_choice}")
-    st.dataframe(f_df, width='stretch') 
+with tab_table:
+    st.subheader(f"Дані для {selected_region}")
+    
+    pearson = filtered_data[selected_index].corr(filtered_data['Year'], method='pearson')
+    spearman = filtered_data[selected_index].corr(filtered_data['Year'], method='spearman')
+    st.write(f"**Кореляція {selected_index} з роком:** Пірсон: {pearson:.3f}, Спірмен: {spearman:.3f}")
+    
+    if st.checkbox("Показати One Hot Encoding області"):
+        ohe_demo = pd.get_dummies(filtered_data, columns=['Region'])
+        st.dataframe(ohe_demo.head())
+    else:
+        st.dataframe(filtered_data, width='stretch') 
 
-with t2:
-    st.subheader(f"Динаміка {idx_choice}") # п. 16 
-    p_df = f_df.sort_values(by=['Year', 'Week'])
-    p_df['Time'] = p_df['Year'].astype(str) + "-W" + p_df['Week'].astype(str).str.zfill(2)
+with tab_region_plot:
+    st.subheader(f"Динаміка {selected_index}")
+    plot_df = filtered_data.sort_values(by=['Year', 'Week'])
+    plot_df['Time'] = plot_df['Year'].astype(str) + "-W" + plot_df['Week'].astype(str).str.zfill(2)
     
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(p_df['Time'], p_df[idx_choice])
+    ax.plot(plot_df['Time'], plot_df[selected_index])
     
-    step = max(len(p_df) // 10, 1)
-    ax.set_xticks(p_df['Time'][::step])
+    step = max(len(plot_df) // 10, 1)
+    ax.set_xticks(plot_df['Time'][::step])
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
-with t3:
-    st.subheader(f"Порівняння {idx_choice} обраної області з іншими")
+with tab_comparison:
+    st.subheader(f"Порівняння {selected_index} обраної області з іншими")
     
-    # 1. Готую дані для порівняння та сортую їх хронологічно
-    compare_df = df[
-        (df['Year'].between(y_range[0], y_range[1])) & 
-        (df['Week'].between(w_range[0], w_range[1]))
+    compare_df = main_dataframe[
+        (main_dataframe['Year'].between(selected_years[0], selected_years[1])) & 
+        (main_dataframe['Week'].between(selected_weeks[0], selected_weeks[1]))
     ].copy()
     
-    # Створюю вісь часу для плавних ліній
     compare_df = compare_df.sort_values(by=['Year', 'Week'])
     compare_df['Time'] = compare_df['Year'].astype(str) + "-W" + compare_df['Week'].astype(str).str.zfill(2)
     
     fig2, ax2 = plt.subplots(figsize=(10, 6))
     
-    # 2. Малюю кожну область окремо (п. 17)
     for r in compare_df['Region'].unique():
-        region_data = compare_df[compare_df['Region'] == r]
+        region_subset = compare_df[compare_df['Region'] == r]
         
-        # Виділяю обрану область червоним, інші роблю сірими та прозорими
-        if r == reg_choice:
-            ax2.plot(region_data['Time'], region_data[idx_choice], label=r, color='red', linewidth=2.5, zorder=5)
+        if r == selected_region:
+            ax2.plot(region_subset['Time'], region_subset[selected_index], label=r, color='red', linewidth=2.5, zorder=5)
         else:
-            ax2.plot(region_data['Time'], region_data[idx_choice], color='gray', alpha=0.15, linewidth=0.7)
+            ax2.plot(region_subset['Time'], region_subset[selected_index], color='gray', alpha=0.15, linewidth=0.7)
     
-    # 3. Налаштовую вісь X, щоб підписи не зливалися (п. 18)
     time_ticks = compare_df['Time'].unique()
-    step = max(len(time_ticks) // 10, 1)
-    ax2.set_xticks(time_ticks[::step])
+    tick_step = max(len(time_ticks) // 10, 1)
+    ax2.set_xticks(time_ticks[::tick_step])
     plt.xticks(rotation=45)
     
-    ax2.set_ylabel(idx_choice)
+    ax2.set_ylabel(selected_index)
     ax2.legend(loc='upper right')
     ax2.grid(True, alpha=0.2)
     
