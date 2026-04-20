@@ -1,5 +1,7 @@
 build/
-.vs/
-out/
+bin/
+obj/
+.vscode/
+*.dll
 *.exe
-*.sln
+*.pdb
