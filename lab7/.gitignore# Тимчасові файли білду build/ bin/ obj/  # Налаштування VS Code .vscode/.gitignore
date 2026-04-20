@@ -1,9 +1,0 @@
-build/
-bin/
-obj/
-.vscode/
-*.exe
-*.dll
-*.pdb
-*.prototxt
-*.caffemodel
