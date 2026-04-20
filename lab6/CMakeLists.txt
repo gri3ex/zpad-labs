@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
-project(ZPAD_Lab6)
+project(Lab6_OpenCV)
 
 set(CMAKE_CXX_STANDARD 17)
+set(OpenCV_DIR "C:/opencv/build")
 
-# Пошук встановленої бібліотеки OpenCV
 find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${OpenCV_INCLUDE_DIRS} include)
 
-# Створення виконваного файлу
-add_executable(lab6_exe src/main.cpp)
+# Збираємо всі файли
+file(GLOB_RECURSE SOURCES "src/*.cpp" "main.cpp")
 
-# Лінкування OpenCV
+add_executable(lab6_exe ${SOURCES})
+
+# ЦЕЙ РЯДОК МАЄ БУТИ ОБОВ'ЯЗКОВО:
 target_link_libraries(lab6_exe ${OpenCV_LIBS})
