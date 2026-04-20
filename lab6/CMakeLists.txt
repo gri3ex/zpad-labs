@@ -7,10 +7,8 @@ set(OpenCV_DIR "C:/opencv/build")
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS} include)
 
-# Збираємо всі файли
 file(GLOB_RECURSE SOURCES "src/*.cpp" "main.cpp")
 
 add_executable(lab6_exe ${SOURCES})
 
-# ЦЕЙ РЯДОК МАЄ БУТИ ОБОВ'ЯЗКОВО:
 target_link_libraries(lab6_exe ${OpenCV_LIBS})
