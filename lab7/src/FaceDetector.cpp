@@ -51,7 +51,7 @@ void FaceDetector::worker() {
 
             for (int i = 0; i < detectionMat.rows; i++) {
                 float confidence = detectionMat.at<float>(i, 2);
-                if (confidence > 0.5) { // Впевненість > 50%
+                if (confidence > 0.5) { // впевненість > 50%
                     int x1 = static_cast<int>(detectionMat.at<float>(i, 3) * frameForInference.cols);
                     int y1 = static_cast<int>(detectionMat.at<float>(i, 4) * frameForInference.rows);
                     int x2 = static_cast<int>(detectionMat.at<float>(i, 5) * frameForInference.cols);
