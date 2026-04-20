@@ -1,66 +1,39 @@
 #include <opencv2/opencv.hpp>
-#include <iostream>
-
-using namespace cv;
-using namespace std;
-
-// Змінна для перемикання режимів обробки
-int currentMode = 0; 
-
-// 3. Реагування на мишу: Функція зворотного виклику
-void onMouseAction(int event, int x, int y, int flags, void* userdata) {
-    if (event == EVENT_LBUTTONDOWN) {
-        cout << "Клік миші: x=" << x << ", y=" << y << endl;
-    }
-}
+#include "CameraProvider.hpp"
+#include "KeyProcessor.hpp"
+#include "FrameProcessor.hpp"
+#include "Display.hpp"
 
 int main() {
-    // 1. Читання відео з камери
-    VideoCapture videoSource(0); 
-    if (!videoSource.isOpened()) {
-        cerr << "Помилка: Камеру не знайдено!" << endl;
-        return -1;
-    }
+    // створює об'єкти наших класів
+    CameraProvider camera(0); // 0 - індекс стандартної камери
+    KeyProcessor keyHandler;
+    FrameProcessor processor;
+    Display viewer;
 
-    string winName = "Lab 6: OpenCV Interactive";
-    namedWindow(winName);
+    Mode currentMode = Mode::ORIGINAL;
 
-    // Встановлює обробник миші для вікна
-    setMouseCallback(winName, onMouseAction);
-
-    Mat rawFrame, displayFrame;
-
-    cout << "Керування: 1-Оригінал, 2-Сірий, 3-Canny, 4-Blur, Esc-Вихід" << endl;
-
-    // Основний цикл програми
+    // Головний цикл програми
     while (true) {
-        videoSource >> rawFrame; // Читаю кадр
-        if (rawFrame.empty()) break;
+        // 1. отримує кадр
+        cv::Mat frame = camera.getFrame();
+        if (frame.empty()) break;
 
-        // 4. Режими обробки зображень залежно від клавіш
-        if (currentMode == 1) {
-            cvtColor(rawFrame, displayFrame, COLOR_BGR2GRAY); // Сірий
-        } else if (currentMode == 2) {
-            Canny(rawFrame, displayFrame, 50, 150); // Межі
-        } else if (currentMode == 3) {
-            GaussianBlur(rawFrame, displayFrame, Size(15, 15), 0); // Розмиття
-        } else {
-            displayFrame = rawFrame.clone(); // Оригінал
-        }
+        // 2. обробляє кадр відповідно до обраного режиму
+        cv::Mat processedFrame = processor.process(frame, currentMode);
 
-        // 2. Відображення у вікні
-        imshow(winName, displayFrame);
+        // 3. відображає результат
+        viewer.show(processedFrame);
 
-        // 3. Реагування на клавіатуру
-        char pressedKey = (char)waitKey(30);
-        if (pressedKey == 27) break; // Esc
-        if (pressedKey == '1') currentMode = 0;
-        if (pressedKey == '2') currentMode = 1;
-        if (pressedKey == '3') currentMode = 2;
-        if (pressedKey == '4') currentMode = 3;
+        // 4. отримує натиснуту клавішу
+        int key = cv::waitKey(30);
+        
+        // вихід 
+        if (key == 27) break;
+
+        // оновлює режим обробки
+        currentMode = keyHandler.getMode(key, currentMode);
     }
 
-    videoSource.release();
-    destroyAllWindows();
     return 0;
 }
