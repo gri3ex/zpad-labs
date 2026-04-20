@@ -1,6 +1,6 @@
 #pragma once
 
-// Список режимів обробки
+// список режимів обробки
 enum class Mode {
     ORIGINAL,
     GRAY,
