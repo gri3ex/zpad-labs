@@ -7,3 +7,7 @@ __pycache__/
 *.txt
 *.zip
 .ipynb_checkpoints/
+build/
+*.dll
+*.exe
+*.caffemodel
