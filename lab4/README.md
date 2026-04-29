@@ -11,7 +11,7 @@
 ### 1. Підготовка проєкту
 Завантажте репозиторій та перейдіть у відповідну директорію:
 ```bash
-git clone [https://github.com/gri3ex/zpad-labs.git](https://github.com/gri3ex/zpad-labs.git)
+git clone https://github.com/gri3ex/zpad-labs.git
 cd zpad-labs/lab4
 ```
 ### 2. Налаштування віртуального середовища
